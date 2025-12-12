@@ -82,8 +82,8 @@ namespace Branding {
       {
         "Youtube",
         new() {
-          Base = Color.Red,
-          Strong = ColorUtil.Lerp(Color.Red, Color.White, 0.25),
+          Base = ColorUtil.Lerp(Color.Red, Color.Black, 0.25),
+          Strong = ColorUtil.Lerp(Color.Red, Color.Orange, 0.25),
           Highlight = Color.Yellow,
           Texture = Color.Orange,
           Grit = Color.DarkRed
@@ -92,10 +92,10 @@ namespace Branding {
       {
         "Twitch",
         new() {
-          Base = Color.Purple,
-          Strong = Color.Pink,
+          Base = ColorUtil.Lerp(Color.Purple, Color.White, 0.25),
+          Strong = ColorUtil.Lerp(Color.Pink, Color.Black, 0.25),
           Highlight = Color.Teal,
-          Texture = Color.Red,
+          Texture = Color.Pink,
           Grit = Color.Purple
         }
       },

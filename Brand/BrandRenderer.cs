@@ -51,7 +51,8 @@ namespace Branding.Brand {
       }
 
 
-      // Dark Halo
+      // Dark Halo Stuff
+
       var darkHaloFilter = new DarkHaloFilter() {
         DarkAlpha = 128,
         JaggedFactor = 0.15,
@@ -59,7 +60,7 @@ namespace Branding.Brand {
         HaloPadding = 0.15,
         MaxLineHeight = Math.Max(10, (int)(Profile.Height / 64))
       };
-      darkHaloFilter.Apply(fullBmp);
+
 
 
       // Text Stuff
@@ -98,21 +99,76 @@ namespace Branding.Brand {
       codesNoiseFilter.Apply(codesBmp);
 
 
+      // Line Stuff
+      var linesExtraWidth = bartonBmp.Width / 2;
+      var linesMinHeight = (int)(bartonBmp.Height * 0.16);
+      var linesMaxHeight = (int)(bartonBmp.Height * 0.16);
+      var linesNumLayers = 5;
+
+      var lineNoiseColor = ColorUtil.Lerp(Profile.Colors.Texture, Color.Black, 0.80);
+      // var lineNoiseColor = Profile.Colors.Texture;
+      var lineNoise = new NoiseFilter(lineNoiseColor, 2);
+      var linePixelator = new PixelateFilter(4, 4, InterpolationMode.NearestNeighbor, InterpolationMode.Low);
+
+      var bartonLineGen = new BcLineGenerator() {
+        Width = bartonBmp.Width + linesExtraWidth,
+        NumLayers = linesNumLayers,
+        MinHeight = linesMinHeight,
+        MaxHeight = linesMaxHeight,
+        StartColor = Profile.Colors.Base,
+        EndColor = ColorUtil.Lerp(Profile.Colors.Base, Color.Black, 0.80)
+      };
+      var bartonLineBmp = bartonLineGen.Generate();
+      bartonLineBmp.RotateFlip(RotateFlipType.RotateNoneFlipX);
+      lineNoise.Apply(bartonLineBmp);
+      linePixelator.Apply(bartonLineBmp);
+
+      var codesLineGen = new BcLineGenerator() {
+        Width = codesBmp.Width + linesExtraWidth,
+        NumLayers = linesNumLayers,
+        MinHeight = linesMinHeight,
+        MaxHeight = linesMaxHeight,
+        StartColor = Profile.Colors.Strong,
+        EndColor = ColorUtil.Lerp(Profile.Colors.Strong, Color.Black, 0.80)
+      };
+      var codesLineBmp = codesLineGen.Generate();
+      lineNoise.Apply(codesLineBmp);
+      linePixelator.Apply(codesLineBmp);
+
       // Layout
 
       using (var g = Graphics.FromImage(fullBmp)) {
-        var bumpHeight = (int)(bartonBmp.Height * 0.1);
+        var bumpHeight = (int)(bartonBmp.Height * 0.12);
+        var pinchWidth = (int)(bartonBmp.Width * 0.05);
+        var lineSepWidth = (int)(bartonBmp.Width * 0.10);
         var textWidth = bartonBmp.Width + codesBmp.Width;
 
         var bartonTextTL = new Point(
-          (Profile.Width / 2) - (textWidth / 2),
+          ((Profile.Width / 2) - (textWidth / 2)) + pinchWidth,
           ((Profile.Height / 2) - (bartonBmp.Height / 2)) - bumpHeight
         );
         var codesTextTL = new Point(
-          ((Profile.Width / 2) - (textWidth / 2)) + bartonBmp.Width,
+          (((Profile.Width / 2) - (textWidth / 2)) + bartonBmp.Width) - pinchWidth,
           ((Profile.Height / 2) - (codesBmp.Height / 2)) + bumpHeight
         );
 
+        var bartonLineTL = new Point(
+          (bartonTextTL.X - lineSepWidth) - linesExtraWidth,
+          (bartonTextTL.Y + bartonBmp.Height) - bartonLineBmp.Height
+        );
+        var codesLineTL = new Point(
+          (codesTextTL.X + lineSepWidth),
+          (codesTextTL.Y)
+        );
+
+        // Draw lines
+        g.DrawImage(bartonLineBmp, bartonLineTL);
+        g.DrawImage(codesLineBmp, codesLineTL);
+
+        // Apply dark halo
+        darkHaloFilter.Apply(fullBmp);
+
+        // Draw text
         g.DrawImage(bartonBmp, bartonTextTL);
         g.DrawImage(codesBmp, codesTextTL);
 
