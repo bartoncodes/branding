@@ -1,78 +1,114 @@
 ﻿using Branding.Brand;
+using Branding.Json;
 using Branding.Util;
 using System.Drawing;
+using System.Text.Json;
 
 namespace Branding {
 
   public class Program {
-    public static readonly string OutputDirPath = @"C:\BartonCodes\Branding\out";
+    private static readonly string ProfilesDirPath = @"C:\BartonCodes\Branding\Profiles";
+    private static readonly string OutputsDirPath = @"C:\BartonCodes\Branding\Outputs";
+
+    private static BrandProfile ParseProfile(BrandProfileJson json) {
+      if (string.IsNullOrWhiteSpace(json.Name))
+        throw new InvalidOperationException($"Invalid profile name '{json.Name}'.");
+      if(json.Width <= 0 || json.Height <= 0)
+        throw new InvalidOperationException($"Invalid width or height {json.Width}x{json.Height}.");
+      if (!ColorProfiles.TryGetValue(json.Colors, out var colorProfile))
+        throw new InvalidOperationException($"No color profile named '{json.Colors}'.");
+      if (!Enum.TryParse(json.Type, out BrandType brandType))
+        throw new InvalidOperationException($"No brand type named '{json.Type}'.");
+      if(json.AreaOfInterest == null)
+        throw new InvalidOperationException($"Invalid area of interest: null");
+      if(
+        json.AreaOfInterest.X <= 0 ||
+        json.AreaOfInterest.Y <= 0 ||
+        json.AreaOfInterest.Width <= 0 ||
+        json.AreaOfInterest.Height <= 0
+      )
+        throw new InvalidOperationException(
+          $"Invalid area of interest: {json.AreaOfInterest.X},{json.AreaOfInterest.Y},{json.AreaOfInterest.Width}x{json.AreaOfInterest.Height}");
+      var areaOfInterest = new Rectangle(json.AreaOfInterest.X, json.AreaOfInterest.Y, json.AreaOfInterest.Width, json.AreaOfInterest.Height);
+      return new BrandProfile() {
+        Name = json.Name,
+        Colors = colorProfile,
+        Type = brandType,
+        Width = json.Width,
+        Height = json.Height,
+        AreaOfInterest = areaOfInterest
+      };
+    }
+
+    private static List<BrandProfile> LoadProfiles() {
+      var profiles = new List<BrandProfile>();
+      try {
+        var profilesDir = new DirectoryInfo(ProfilesDirPath);
+        var profileFiles = profilesDir.GetFiles();
+        foreach (var profileFile in profileFiles) {
+          var profileText = File.ReadAllText(profileFile.FullName);
+          var profileJson = JsonSerializer.Deserialize<BrandProfileJson>(profileText)!;
+          var profile = ParseProfile(profileJson);
+          profiles.Add(profile);
+        }
+      } catch (Exception ex) {
+        Console.WriteLine($"Problem loading profiles :( - {ex.Message}");
+        return new List<BrandProfile>();
+      }
+      return profiles;
+    }
 
     static void Main(string[] args) {
-      var profiles = GetProfiles();
-
+      var profiles = LoadProfiles();
       foreach(var profile in profiles) {
         var renderer = new BrandRenderer(profile);
         var bmp = renderer.Render();
-        var filePath = Path.Combine(OutputDirPath, profile.Name + ".bmp");
+        var filePath = Path.Combine(OutputsDirPath, profile.Name + ".bmp");
         bmp.Save(filePath);
       }
     }
 
-    static List<BrandProfile> GetProfiles() {
-      var xColors = new ColorProfile() {
-        Base = Color.FromArgb(255, 64, 160, 160),
-        Strong = Color.FromArgb(255, 112, 208, 208),
-        Highlight = Color.FromArgb(255, 0, 255, 128),
-        Texture = Color.FromArgb(255, 112, 208, 208),
-        Grit = Color.FromArgb(255, 0, 96, 128)
-      };
-
-      var youtubeColors = new ColorProfile() {
-        Base = Color.Red,
-        Strong = ColorUtil.Lerp(Color.Red, Color.White, 0.25),
-        Highlight = Color.Yellow,
-        Texture = Color.Orange,
-        Grit = Color.DarkRed
-      };
-
-      var twitchColors = new ColorProfile() {
-        Base = Color.Purple,
-        Strong = Color.Pink,
-        Highlight = Color.Teal,
-        Texture = Color.Red,
-        Grit = Color.Purple
-      };
-
-      return [
-        new BrandProfile() {
-          Name = "X Banner",
-          Colors = xColors,
-          Type = BrandType.Banner,
-          Width = 1500,
-          Height = 500,
-          AreaOfInterest = new Rectangle(325, 125, 700, 250)
-        },
-
-        new BrandProfile() {
-          Name = "Youtube Banner",
-          Colors = youtubeColors,
-          Type = BrandType.Banner,
-          Width = 2560,
-          Height = 1440,
-          AreaOfInterest = new Rectangle(662, 551, 1235, 338)
-        },
-
-        new BrandProfile() {
-          Name = "Twitch Banner",
-          Colors = twitchColors,
-          Type = BrandType.Banner,
-          Width = 1200,
-          Height = 480,
-          AreaOfInterest = new Rectangle(300, 120, 600, 240)
-        },
-
-      ];
-    }
-
+    private static readonly Dictionary<string, ColorProfile> ColorProfiles = new() {
+      {
+        "X",
+        new() {
+          Base = Color.FromArgb(255, 64, 160, 160),
+          Strong = Color.FromArgb(255, 112, 208, 208),
+          Highlight = Color.FromArgb(255, 0, 255, 128),
+          Texture = Color.FromArgb(255, 112, 208, 208),
+          Grit = Color.FromArgb(255, 0, 96, 128)
+        }
+      },
+      {
+        "Youtube",
+        new() {
+          Base = Color.Red,
+          Strong = ColorUtil.Lerp(Color.Red, Color.White, 0.25),
+          Highlight = Color.Yellow,
+          Texture = Color.Orange,
+          Grit = Color.DarkRed
+        }
+      },
+      {
+        "Twitch",
+        new() {
+          Base = Color.Purple,
+          Strong = Color.Pink,
+          Highlight = Color.Teal,
+          Texture = Color.Red,
+          Grit = Color.Purple
+        }
+      },
+      {
+        "Patreon",
+        new() {
+          Base = Color.Orange,
+          Strong = Color.OrangeRed,
+          Highlight = Color.Yellow,
+          Texture = Color.Yellow,
+          Grit = Color.Brown
+        }
+      }
+    };
   }
 }

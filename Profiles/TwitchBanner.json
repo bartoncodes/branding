@@ -1,0 +1,13 @@
+{
+  "Name": "Twitch Banner",
+  "Colors": "Twitch",
+  "Type": "Banner",
+  "Width": 1200,
+  "Height": 480,
+  "AreaOfInterest": {
+    "X": 300,
+    "Y": 120,
+    "Width": 600,
+    "Height": 240
+  }
+}

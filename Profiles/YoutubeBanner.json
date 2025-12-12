@@ -1,0 +1,13 @@
+{
+  "Name": "Youtube Banner",
+  "Colors": "Youtube",
+  "Type": "Banner",
+  "Width": 2560,
+  "Height": 1440,
+  "AreaOfInterest": {
+    "X": 662,
+    "Y": 551,
+    "Width": 1235,
+    "Height": 338
+  }
+}

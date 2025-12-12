@@ -1,0 +1,13 @@
+{
+  "Name": "Patreon Banner",
+  "Colors": "Patreon",
+  "Type": "Banner",
+  "Width": 1600,
+  "Height": 400,
+  "AreaOfInterest": {
+    "X": 300,
+    "Y": 50,
+    "Width": 1000,
+    "Height": 300
+  }
+}

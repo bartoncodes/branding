@@ -1,0 +1,13 @@
+{
+  "Name": "X Banner",
+  "Colors": "X",
+  "Type": "Banner",
+  "Width": 1500,
+  "Height": 500,
+  "AreaOfInterest": {
+    "X": 325,
+    "Y": 125,
+    "Width": 700,
+    "Height": 250
+  }
+}

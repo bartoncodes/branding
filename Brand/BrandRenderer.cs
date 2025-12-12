@@ -51,6 +51,17 @@ namespace Branding.Brand {
       }
 
 
+      // Dark Halo
+      var darkHaloFilter = new DarkHaloFilter() {
+        DarkAlpha = 128,
+        JaggedFactor = 0.15,
+        HaloLayers = 3,
+        HaloPadding = 0.15,
+        MaxLineHeight = Math.Max(10, (int)(Profile.Height / 64))
+      };
+      darkHaloFilter.Apply(fullBmp);
+
+
       // Text Stuff
 
       var bartonFontSize = (int)(Profile.AreaOfInterest.Height * 0.50);
