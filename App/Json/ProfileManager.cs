@@ -9,14 +9,13 @@ namespace Brand.App.Json {
 
   public class ProfileManager {
 
-    private static readonly string ProfilesDirPath = @"C:\BartonCodes\Branding\Profiles";
-    
+    public string ProfilesDirPath { get; set; }
 
-    public ProfileManager() {
-
+    public ProfileManager(string profilesDirPath) {
+      ProfilesDirPath = profilesDirPath;
     }
 
-    public BrandProfile ParseProfile(BrandProfileJson json) {
+    public BrandProfile ParseProfile(BrandProfileJson json, string jsonFileName) {
       if (string.IsNullOrWhiteSpace(json.Name))
         throw new InvalidOperationException($"Invalid profile name '{json.Name}'.");
       if (json.Width <= 0 || json.Height <= 0)
@@ -38,8 +37,11 @@ namespace Brand.App.Json {
       var areaOfInterest = new Rectangle(json.AreaOfInterest.X, json.AreaOfInterest.Y, json.AreaOfInterest.Width, json.AreaOfInterest.Height);
       return new BrandProfile() {
         Name = json.Name,
-        Colors = colorProfile,
         Type = brandType,
+        Theme = json.Colors,
+        FileName = jsonFileName,
+        Colors = colorProfile,
+        
         Width = json.Width,
         Height = json.Height,
         AreaOfInterest = areaOfInterest
@@ -54,7 +56,7 @@ namespace Brand.App.Json {
         foreach (var profileFile in profileFiles) {
           var profileText = File.ReadAllText(profileFile.FullName);
           var profileJson = JsonSerializer.Deserialize<BrandProfileJson>(profileText)!;
-          var profile = ParseProfile(profileJson);
+          var profile = ParseProfile(profileJson, profileFile.Name);
           profiles.Add(profile);
         }
       } catch (Exception ex) {

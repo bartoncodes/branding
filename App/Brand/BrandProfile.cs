@@ -7,8 +7,10 @@ namespace Branding.App.Brand {
 
   public class BrandProfile {
     public string Name { get; init; }
-    public ColorProfile Colors { get; init; }
     public BrandType Type { get; init; }
+    public string Theme { get; init; }
+    public string FileName { get; init; }
+    public ColorProfile Colors { get; init; }
     public int Width { get; init; }
     public int Height { get; init; }
     public Rectangle AreaOfInterest { get; init; }

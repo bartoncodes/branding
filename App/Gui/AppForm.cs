@@ -1,28 +1,35 @@
-﻿using System;
+﻿using Brand.App.Json;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Branding.App.Gui {
 
   public class AppForm : Form{
 
+    private ProfileManager ProfileManager { get; set; }
+
+    private DataGridView ProfilesTable { get; set; }
     private Button ProfilesRefreshButton { get; set; }
     private Button ProfilesSelectAllButton { get; set; }
     private Button ProfilesSelectTypeButton { get; set; }
 
     public AppForm() {
+      var defaultProfilesDirPath = @"C:\BartonCodes\Branding\Profiles";
 
+      ProfileManager = new ProfileManager(defaultProfilesDirPath);
+
+      InitForm();
+
+      LoadProfiles();
+    }
+
+    private void InitForm() {
       Text = "Branding Generator App";
       SetClientSizeCore(1000, 600);
 
-
-      Init();
-
-
-    }
-
-    private void Init() {
       var appLayout = new SplitContainer();
       appLayout.Dock = DockStyle.Fill;
       appLayout.Orientation = Orientation.Vertical;
@@ -74,20 +81,33 @@ namespace Branding.App.Gui {
       profilesBox.Dock = DockStyle.Fill;
       parentPanel.Controls.Add(profilesBox);
 
-      var topTable = new TableLayoutPanel();
-      topTable.Dock = DockStyle.Fill;
-      profilesBox.Controls.Add(topTable);
+      var profilesLayout = new TableLayoutPanel();
+      profilesLayout.Dock = DockStyle.Fill;
+      profilesBox.Controls.Add(profilesLayout);
 
-      topTable.ColumnCount = 1;
-      topTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100.0f));
+      profilesLayout.ColumnCount = 1;
+      profilesLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100.0f));
 
-      topTable.RowCount = 2;
-      topTable.RowStyles.Add(new RowStyle(SizeType.Percent, 100.0f));
-      topTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 35.0f));
+      profilesLayout.RowCount = 2;
+      profilesLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100.0f));
+      profilesLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 35.0f));
 
+      var tablePanel = new Panel();
+      tablePanel.Dock = DockStyle.Fill;
+      profilesLayout.Controls.Add(tablePanel, 0, 0);
+
+      var buttonsPanel = new Panel();
+      buttonsPanel.Dock = DockStyle.Fill;
+      profilesLayout.Controls.Add(buttonsPanel, 0, 1);
+
+      InitProfilesTable(tablePanel);
+      InitProfilesButtons(buttonsPanel);
+    }
+
+    private void InitProfilesButtons(Panel parentPanel) {
       var buttonsTable = new TableLayoutPanel();
       buttonsTable.Dock = DockStyle.Fill;
-      topTable.Controls.Add(buttonsTable, 0, 1);
+      parentPanel.Controls.Add(buttonsTable);
 
       buttonsTable.RowCount = 1;
       buttonsTable.RowStyles.Add(new RowStyle(SizeType.Percent, 100.0f));
@@ -113,6 +133,76 @@ namespace Branding.App.Gui {
       buttonsTable.Controls.Add(ProfilesRefreshButton, nextColNum++, 0);
 
       buttonsTable.ColumnCount = nextColNum;
+    }
+
+    private void InitProfilesTable(Panel parentPanel) {
+
+      ProfilesTable = new DataGridView();
+      ProfilesTable.Dock = DockStyle.Fill;
+      parentPanel.Controls.Add(ProfilesTable);
+
+      // Configure Table
+      ProfilesTable.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+      ProfilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+      ProfilesTable.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+      ProfilesTable.MultiSelect = false;
+      ProfilesTable.RowHeadersVisible = false;
+
+      ProfilesTable.AllowUserToAddRows = false;
+      ProfilesTable.AllowUserToDeleteRows = false;
+      ProfilesTable.AllowUserToResizeRows = false;
+
+      
+      
+      // Selected Column
+      ProfilesTable.Columns.Add(new DataGridViewCheckBoxColumn() {
+        Name = "Selected",
+        HeaderText = "",
+        MinimumWidth = 24,
+        Width = 24,
+        FillWeight = 10,
+      });
+
+      // Name Column
+      ProfilesTable.Columns.Add(new DataGridViewTextBoxColumn() {
+        Name = "Name",
+        HeaderText = "Name",
+        MinimumWidth = 100,
+        FillWeight = 100,
+        ReadOnly = true,
+
+      });
+
+      // Type Column
+      ProfilesTable.Columns.Add(new DataGridViewTextBoxColumn() {
+        Name = "Type",
+        HeaderText = "Type",
+        MinimumWidth = 50,
+        FillWeight = 50,
+        ReadOnly = true
+      });
+
+      // Theme Column
+      ProfilesTable.Columns.Add(new DataGridViewTextBoxColumn() {
+        Name = "Theme",
+        HeaderText = "Theme",
+        MinimumWidth = 50,
+        FillWeight = 50,
+        ReadOnly = true
+      });
+
+      // File Column
+      ProfilesTable.Columns.Add(new DataGridViewTextBoxColumn() {
+        Name = "File",
+        HeaderText = "File",
+        MinimumWidth = 100,
+        FillWeight = 100,
+        ReadOnly = true
+      });
+
+      // TESTING
+      ProfilesTable.Rows.Add(true, "Test", "Banner", "Youtube", "TestYoutubeBanner.json");
 
     }
 
@@ -150,6 +240,16 @@ namespace Branding.App.Gui {
       settingsBox.Dock = DockStyle.Fill;
       parentPanel.Controls.Add(settingsBox);
 
+    }
+
+    private void LoadProfiles() {
+      var profiles = ProfileManager.LoadProfiles();
+
+      ProfilesTable.Rows.Clear();
+
+      foreach(var profile in profiles) {
+        ProfilesTable.Rows.Add(false, profile.Name, Enum.GetName(profile.Type) ?? "", profile.Theme, profile.FileName);
+      }
     }
 
   }
