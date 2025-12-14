@@ -1,13 +1,13 @@
-﻿using Branding.Filters;
-using Branding.Generators;
-using Branding.Util;
+﻿using Brand.App.Filters;
+using Branding.App.Generators;
+using Branding.App.Util;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
 
-namespace Branding.Brand {
+namespace Branding.App.Brand {
 
   public class BrandRenderer {
     private BrandProfile Profile { get; set; }
@@ -53,11 +53,16 @@ namespace Branding.Brand {
 
       // Dark Halo Stuff
 
+      var haloPadding = 0.15;
+      if(Profile.Type == BrandType.Frame) {
+        haloPadding = 0.0;
+      }
+
       var darkHaloFilter = new DarkHaloFilter() {
         DarkAlpha = 128,
         JaggedFactor = 0.15,
         HaloLayers = 3,
-        HaloPadding = 0.15,
+        HaloPadding = haloPadding,
         MaxLineHeight = Math.Max(10, (int)(Profile.Height / 64))
       };
 
@@ -151,6 +156,19 @@ namespace Branding.Brand {
           (((Profile.Width / 2) - (textWidth / 2)) + bartonBmp.Width) - pinchWidth,
           ((Profile.Height / 2) - (codesBmp.Height / 2)) + bumpHeight
         );
+        
+        // TODO: Generalize and fix the other one
+        if(Profile.Type == BrandType.Frame) {
+          var Aoi = Profile.AreaOfInterest;
+          bartonTextTL = new Point(
+            Aoi.X + (((Aoi.Width / 2) - (textWidth / 2)) + pinchWidth),
+            Aoi.Y + (((Aoi.Height / 2) - (bartonBmp.Height / 2)) - bumpHeight)
+          );
+          codesTextTL = new Point(
+            Aoi.X + ((((Aoi.Width / 2) - (textWidth / 2)) + bartonBmp.Width) - pinchWidth),
+            Aoi.Y + (((Aoi.Height / 2) - (codesBmp.Height / 2)) + bumpHeight)
+          );
+        }
 
         var bartonLineTL = new Point(
           (bartonTextTL.X - lineSepWidth) - linesExtraWidth,

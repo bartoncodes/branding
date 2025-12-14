@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
 
-namespace Branding.Generators {
+namespace Branding.App.Generators {
 
   public class GradientGenerator : IGenerator {
     private int Width { get; set; }

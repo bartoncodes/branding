@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace Branding.Filters {
+namespace Brand.App.Filters {
 
   public class DarkHaloFilter : IFilter {
     public int DarkAlpha { get; init; }

@@ -1,10 +1,9 @@
-﻿using Branding.Brand;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace Branding.Json {
+namespace Brand.App.Json {
 
   public class BrandProfileJson {
     public string Name { get; set; }

@@ -1,0 +1,13 @@
+{
+  "Name": "Video Frame",
+  "Colors": "Frame",
+  "Type": "Frame",
+  "Width": 1920,
+  "Height": 1080,
+  "AreaOfInterest": {
+    "X": 480,
+    "Y": 135,
+    "Width": 960,
+    "Height": 270
+  }
+}

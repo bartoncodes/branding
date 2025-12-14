@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace Branding.Brand {
+namespace Branding.App.Brand {
 
   public class ColorProfile {
     public Color Base { get; init; }

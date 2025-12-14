@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
 
-namespace Branding.Filters {
+namespace Brand.App.Filters {
 
   public class PixelateFilter : IFilter {
     private int PixWidth { get; set; }

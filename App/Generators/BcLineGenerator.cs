@@ -1,10 +1,10 @@
-﻿using Branding.Util;
+﻿using Branding.App.Util;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace Branding.Generators {
+namespace Branding.App.Generators {
 
   public class BcLineGenerator : IGenerator {
     public int Width { get; init; }

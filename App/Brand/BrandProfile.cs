@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace Branding.Brand {
+namespace Branding.App.Brand {
 
   public class BrandProfile {
     public string Name { get; init; }
