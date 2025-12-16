@@ -39,10 +39,13 @@ namespace Branding.App.Gui {
     private void InitForm() {
       Text = "Branding Generator App";
       SetClientSizeCore(1000, 600);
+      WindowState = FormWindowState.Maximized;
 
       var appLayout = new SplitContainer();
       appLayout.Dock = DockStyle.Fill;
       appLayout.Orientation = Orientation.Vertical;
+      appLayout.FixedPanel = FixedPanel.Panel2;
+      appLayout.IsSplitterFixed = true;
       Controls.Add(appLayout);
 
       var leftLayout = new SplitContainer();
@@ -241,7 +244,7 @@ namespace Branding.App.Gui {
       PreviewLoadingLabel.BringToFront();
 
       // Start loading label in hidden state
-      // PreviewLoadingLabel.Hide();
+      PreviewLoadingLabel.Hide();
     }
 
     private void InitConfigBox(Panel parentPanel) {
