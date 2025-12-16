@@ -18,7 +18,7 @@ namespace Branding.App.Util {
       );
     }
 
-    public static readonly Dictionary<string, ColorProfile> ColorProfiles = new() {
+    public static readonly Dictionary<string, ColorProfile> ColorThemes = new() {
       {
         "Frame",
         new() {

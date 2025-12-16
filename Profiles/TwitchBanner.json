@@ -1,6 +1,6 @@
 {
   "Name": "Twitch Banner",
-  "Colors": "Twitch",
+  "Theme": "Twitch",
   "Type": "Banner",
   "Width": 1200,
   "Height": 480,

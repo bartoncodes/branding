@@ -20,8 +20,8 @@ namespace Brand.App.Json {
         throw new InvalidOperationException($"Invalid profile name '{json.Name}'.");
       if (json.Width <= 0 || json.Height <= 0)
         throw new InvalidOperationException($"Invalid width or height {json.Width}x{json.Height}.");
-      if (!ColorUtil.ColorProfiles.TryGetValue(json.Colors, out var colorProfile))
-        throw new InvalidOperationException($"No color profile named '{json.Colors}'.");
+      if (!ColorUtil.ColorThemes.TryGetValue(json.Theme, out var colors))
+        throw new InvalidOperationException($"No color profile named '{json.Theme}'.");
       if (!Enum.TryParse(json.Type, out BrandType brandType))
         throw new InvalidOperationException($"No brand type named '{json.Type}'.");
       if (json.AreaOfInterest == null)
@@ -38,9 +38,9 @@ namespace Brand.App.Json {
       return new BrandProfile() {
         Name = json.Name,
         Type = brandType,
-        Theme = json.Colors,
+        Theme = json.Theme,
         FileName = jsonFileName,
-        Colors = colorProfile,
+        Colors = colors,
         
         Width = json.Width,
         Height = json.Height,
