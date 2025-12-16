@@ -1,5 +1,6 @@
 ﻿using Brand.App.Json;
 using Branding.App.Brand;
+using Branding.App.Util;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -21,6 +22,16 @@ namespace Branding.App.Gui {
     private Button ProfilesRefreshButton { get; set; }
     private Button ProfilesSelectAllButton { get; set; }
     private Button ProfilesSelectTypeButton { get; set; }
+
+    private TextBox ProfileNameField { get; set; }
+    private ComboBox ProfileTypeField { get; set; }
+    private ComboBox ProfileThemeField { get; set; }
+    private TextBox ProfileWidthField { get; set; }
+    private TextBox ProfileHeightField { get; set; }
+    private TextBox ProfileAoiXField { get; set; }
+    private TextBox ProfileAoiYField { get; set; }
+    private TextBox ProfileAoiWidthField { get; set; }
+    private TextBox ProfileAoiHeightField { get; set; }
 
     private PictureBox PreviewPictureBox { get; set; }
     private Label PreviewLoadingLabel { get; set; }
@@ -215,7 +226,8 @@ namespace Branding.App.Gui {
 
       // Selection Listener
       ProfilesTable.SelectionChanged += (o, e) => {
-        RefreshPreview();
+        var selectedProfile = GetSelectedProfile();
+        OnProfileSelected(selectedProfile);
       };
 
     }
@@ -266,12 +278,112 @@ namespace Branding.App.Gui {
     }
 
     private void InitSettingsBox(Panel parentPanel) {
-
       var settingsBox = new GroupBox();
-      settingsBox.Text = "Profile Render Settings";
+      settingsBox.Text = "Profile";
       settingsBox.Dock = DockStyle.Fill;
       parentPanel.Controls.Add(settingsBox);
 
+      var table = new TableLayoutPanel();
+      table.Dock = DockStyle.Fill;
+      settingsBox.Controls.Add(table);
+
+      table.ColumnCount = 4;
+      for (var i = 0; i < 4; i++)
+        table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25.0f));
+
+      table.RowCount = 6;
+      for (var i = 0; i < 5; i++)
+        table.RowStyles.Add(new RowStyle(SizeType.Absolute, 28.0f));
+      table.RowStyles.Add(new RowStyle(SizeType.Percent, 100.0f));
+
+      var typeOptions = new List<string>(Enum.GetNames<BrandType>());
+      var themeOptions = ColorUtil.ColorThemes.Keys.ToList();
+
+      // Row 0
+      CreateFieldLabel("Profile Name:", table, 0, 0);
+      ProfileNameField = CreateStringField(table, 1, 0, 3);
+
+      // Row 1
+      CreateFieldLabel("Type:", table, 0, 1);
+      ProfileTypeField = CreateSelectField(typeOptions, table, 1, 1);
+      CreateFieldLabel("Theme:", table, 2, 1);
+      ProfileThemeField = CreateSelectField(themeOptions, table, 3, 1);
+
+      // Row 2
+      CreateFieldLabel("Width:", table, 0, 2);
+      ProfileWidthField = CreateNumberField(table, 1, 2);
+      CreateFieldLabel("Height:", table, 2, 2);
+      ProfileHeightField = CreateNumberField(table, 3, 2);
+
+      // Row 3
+      CreateFieldLabel("AOI X:", table, 0, 3);
+      ProfileAoiXField = CreateNumberField(table, 1, 3);
+      CreateFieldLabel("AOI Y:", table, 2, 3);
+      ProfileAoiYField = CreateNumberField(table, 3, 3);
+
+      // Row 4
+      CreateFieldLabel("AOI Width:", table, 0, 4);
+      ProfileAoiWidthField = CreateNumberField(table, 1, 4);
+      CreateFieldLabel("AOI Height:", table, 2, 4);
+      ProfileAoiHeightField = CreateNumberField(table, 3, 4);
+
+      // Row 5
+      var typeSettingsBox = new GroupBox();
+      typeSettingsBox.Dock = DockStyle.Fill;
+      typeSettingsBox.Text = "Banner Settings"; // TODO: change when different type is selected
+      table.Controls.Add(typeSettingsBox, 0, 5);
+      table.SetColumnSpan(typeSettingsBox, 4);
+
+    }
+
+    private void AddToTable(Control control, TableLayoutPanel table, int col, int row, int colspan = -1, int rowspan = -1) {
+      table.Controls.Add(control, col, row);
+      if (colspan > 0)
+        table.SetColumnSpan(control, colspan);
+      if (rowspan > 0)
+        table.SetRowSpan(control, rowspan);
+    }
+
+    private Label CreateFieldLabel(string text, TableLayoutPanel? table = null, int col = 0, int row = 0, int colspan = -1, int rowspan = -1) {
+      var label = new Label();
+      label.Dock = DockStyle.Fill;
+      label.Text = text;
+      label.TextAlign = ContentAlignment.MiddleRight;
+      if (table != null)
+        AddToTable(label, table, col, row, colspan, rowspan);
+      return label;
+    }
+
+    private TextBox CreateStringField(TableLayoutPanel? table = null, int col = 0, int row = 0, int colspan = -1, int rowspan = -1) {
+      var textBox = new TextBox();
+      textBox.Dock = DockStyle.Fill;
+      textBox.BorderStyle = BorderStyle.FixedSingle;
+
+      if (table != null)
+        AddToTable(textBox, table, col, row, colspan, rowspan);
+      return textBox;
+    }
+
+    private TextBox CreateNumberField(TableLayoutPanel? table = null, int col = 0, int row = 0, int colspan = -1, int rowspan = -1) {
+      var textBox = new TextBox();
+      textBox.Dock = DockStyle.Fill;
+      textBox.BorderStyle = BorderStyle.FixedSingle;
+
+      if (table != null)
+        AddToTable(textBox, table, col, row, colspan, rowspan);
+      return textBox;
+    }
+
+    private ComboBox CreateSelectField(List<string> options, TableLayoutPanel? table = null, int col = 0, int row = 0, int colspan = -1, int rowspan = -1) {
+      var comboBox = new ComboBox();
+      comboBox.Dock = DockStyle.Fill;
+
+      foreach (var option in options)
+        comboBox.Items.Add(option);
+
+      if (table != null)
+        AddToTable(comboBox, table, col, row, colspan, rowspan);
+      return comboBox;
     }
 
     private BrandProfile? GetSelectedProfile() {
@@ -288,6 +400,23 @@ namespace Branding.App.Gui {
         return null;
 
       return profile;
+    }
+
+    private BrandProfile CreateBlankProfile() {
+      return new BrandProfile() {
+        Name = "New Profile",
+        Type = BrandType.Banner,
+        Theme = "X",
+        Colors = ColorUtil.ColorThemes["X"],
+        Width = 100,
+        Height = 100,
+        AreaOfInterest = new Rectangle(0, 0, 100, 100)
+      };
+    }
+
+    private void OnProfileSelected(BrandProfile? profile) {
+      SetProfileInfo(profile);
+      RefreshPreview();
     }
 
     private void LoadProfiles() {
@@ -337,6 +466,23 @@ namespace Branding.App.Gui {
           }
         });
       });
+    }
+
+    private void SetProfileInfo(BrandProfile? profile) {
+      if (profile == null)
+        profile = CreateBlankProfile();
+
+      ProfileNameField.Text = profile.Name;
+      ProfileTypeField.SelectedItem = Enum.GetName(profile.Type) ?? "";
+      ProfileThemeField.SelectedItem = profile.Theme;
+      ProfileWidthField.Text = $"{profile.Width}";
+      ProfileHeightField.Text = $"{profile.Height}";
+      ProfileAoiXField.Text = $"{profile.AreaOfInterest.X}";
+      ProfileAoiYField.Text = $"{profile.AreaOfInterest.Y}";
+      ProfileAoiWidthField.Text = $"{profile.AreaOfInterest.Width}";
+      ProfileAoiHeightField.Text = $"{profile.AreaOfInterest.Height}";
+
+      // TODO: fill type specific settings
     }
 
     private void SyncUi(Action action) {
