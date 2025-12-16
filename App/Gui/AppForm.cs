@@ -1,4 +1,5 @@
 ﻿using Brand.App.Json;
+using Branding.App.Brand;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -10,16 +11,25 @@ namespace Branding.App.Gui {
   public class AppForm : Form{
 
     private ProfileManager ProfileManager { get; set; }
+    private Dictionary<string, BrandProfile> ProfilesByFileName { get; set; }
+
+    private object RenderLock { get; init; } = new object();
+    private int CurrentRenderReqNum { get; set; } = -1;
+    private int NextRenderReqNum { get; set; } = 1;
 
     private DataGridView ProfilesTable { get; set; }
     private Button ProfilesRefreshButton { get; set; }
     private Button ProfilesSelectAllButton { get; set; }
     private Button ProfilesSelectTypeButton { get; set; }
 
+    private PictureBox PreviewPictureBox { get; set; }
+    private Label PreviewLoadingLabel { get; set; }
+
     public AppForm() {
       var defaultProfilesDirPath = @"C:\BartonCodes\Branding\Profiles";
 
       ProfileManager = new ProfileManager(defaultProfilesDirPath);
+      ProfilesByFileName = new Dictionary<string, BrandProfile>();
 
       InitForm();
 
@@ -73,6 +83,9 @@ namespace Branding.App.Gui {
       // Default Sizing
       appLayout.SplitterDistance = 600;
       leftLayout.SplitterDistance = 240;
+
+      // Default preview
+      RefreshPreview();
     }
 
     private void InitProfilesBox(Panel parentPanel) {
@@ -145,16 +158,12 @@ namespace Branding.App.Gui {
       ProfilesTable.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
       ProfilesTable.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
       ProfilesTable.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-
       ProfilesTable.MultiSelect = false;
       ProfilesTable.RowHeadersVisible = false;
-
       ProfilesTable.AllowUserToAddRows = false;
       ProfilesTable.AllowUserToDeleteRows = false;
       ProfilesTable.AllowUserToResizeRows = false;
 
-      
-      
       // Selected Column
       ProfilesTable.Columns.Add(new DataGridViewCheckBoxColumn() {
         Name = "Selected",
@@ -201,8 +210,10 @@ namespace Branding.App.Gui {
         ReadOnly = true
       });
 
-      // TESTING
-      ProfilesTable.Rows.Add(true, "Test", "Banner", "Youtube", "TestYoutubeBanner.json");
+      // Selection Listener
+      ProfilesTable.SelectionChanged += (o, e) => {
+        RefreshPreview();
+      };
 
     }
 
@@ -212,7 +223,25 @@ namespace Branding.App.Gui {
       previewBox.Dock = DockStyle.Fill;
       parentPanel.Controls.Add(previewBox);
 
+      PreviewPictureBox = new PictureBox();
+      PreviewPictureBox.Dock = DockStyle.Fill;
+      PreviewPictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+      PreviewPictureBox.BackColor = Color.Black;
+      previewBox.Controls.Add(PreviewPictureBox);
 
+      PreviewLoadingLabel = new Label();
+      PreviewLoadingLabel.Dock = DockStyle.Fill;
+      PreviewLoadingLabel.Text = "Generating Preview...";
+      PreviewLoadingLabel.Font = new Font("ByteBounce", 20.0f);
+      PreviewLoadingLabel.BackColor = Color.Black;
+      PreviewLoadingLabel.ForeColor = Color.LightGray;
+      PreviewLoadingLabel.TextAlign = ContentAlignment.MiddleCenter;
+      previewBox.Controls.Add(PreviewLoadingLabel);
+
+      PreviewLoadingLabel.BringToFront();
+
+      // Start loading label in hidden state
+      // PreviewLoadingLabel.Hide();
     }
 
     private void InitConfigBox(Panel parentPanel) {
@@ -242,14 +271,69 @@ namespace Branding.App.Gui {
 
     }
 
+    private BrandProfile? GetSelectedProfile() {
+      var selectedRows = ProfilesTable.SelectedRows;
+      if (selectedRows.Count == 0)
+        return null;
+
+      var fileNameObj = selectedRows[0].Cells["File"].Value;
+      if (fileNameObj == null || !(fileNameObj is string))
+        return null;
+
+      var fileName = (string)fileNameObj;
+      if (!ProfilesByFileName.TryGetValue(fileName, out var profile))
+        return null;
+
+      return profile;
+    }
+
     private void LoadProfiles() {
       var profiles = ProfileManager.LoadProfiles();
 
+      ProfilesByFileName.Clear();
       ProfilesTable.Rows.Clear();
 
       foreach(var profile in profiles) {
+        ProfilesByFileName.Add(profile.FileName, profile);
         ProfilesTable.Rows.Add(false, profile.Name, Enum.GetName(profile.Type) ?? "", profile.Theme, profile.FileName);
       }
+    }
+
+    private void RefreshPreview() {
+      PreviewPictureBox.Image = null;
+
+      var profile = GetSelectedProfile();
+      if (profile == null)
+        return;
+
+      PreviewLoadingLabel.Show();
+      PreviewLoadingLabel.BringToFront();
+
+      var renderReqNum = -1;
+      lock (RenderLock) {
+        renderReqNum = NextRenderReqNum++;
+        CurrentRenderReqNum = renderReqNum;
+      }
+      Task.Run(() => {
+        var renderer = new BrandRenderer(profile);
+        var previewBmp = renderer.Render();
+        SyncUi(() => {
+          if (CurrentRenderReqNum != renderReqNum)
+            return;
+          PreviewPictureBox.Image = previewBmp;
+          PreviewLoadingLabel.Hide();
+          lock (RenderLock) {
+            CurrentRenderReqNum = -1;
+          }
+        });
+      });
+    }
+
+    private void SyncUi(Action action) {
+      if (InvokeRequired)
+        BeginInvoke(action);
+      else
+        action();
     }
 
   }
