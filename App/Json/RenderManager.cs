@@ -21,6 +21,7 @@ namespace Brand.App.Json {
         var bmp = renderer.Render();
         var filePath = Path.Combine(OutputsDirPath, profile.Name + ".bmp");
         bmp.Save(filePath);
+        bmp.Dispose();
       }
     }
 

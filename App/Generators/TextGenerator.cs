@@ -1,4 +1,5 @@
-﻿using System;
+﻿using App.Util;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
@@ -19,22 +20,20 @@ namespace Branding.App.Generators {
     }
 
     public Bitmap Generate() {
-      var dumbBmp = new Bitmap(1, 1);
-      SizeF textDims;
-      using (var g = Graphics.FromImage(dumbBmp)) {
-        textDims = g.MeasureString(Text, Font);
+      using(var dsp = new Disposer()) {
+        var dumbBmp = dsp.Add(new Bitmap(1, 1));
+        SizeF textDims;
+        var dumbG = dsp.Add(Graphics.FromImage(dumbBmp));
+        textDims = dumbG.MeasureString(Text, Font);
+
+        var bmpWidth = (int)textDims.Width + (Padding * 2);
+        var bmpHeight = (int)textDims.Height + (Padding * 2);
+
+        var bmp = new Bitmap(bmpWidth, bmpHeight); // out bmp, do not dispose
+        var bmpG = dsp.Add(Graphics.FromImage(bmp));
+        bmpG.DrawString(Text, Font, Brush, new PointF(Padding, Padding));
+        return bmp;
       }
-
-      var bmpWidth = (int)textDims.Width + (Padding * 2);
-      var bmpHeight = (int)textDims.Height + (Padding * 2);
-
-      var bmp = new Bitmap(bmpWidth, bmpHeight);
-
-      using (var g = Graphics.FromImage(bmp)) {
-        g.DrawString(Text, Font, Brush, new PointF(Padding, Padding));
-      }
-
-      return bmp;
     }
   }
 

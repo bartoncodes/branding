@@ -1,4 +1,5 @@
-﻿using System;
+﻿using App.Util;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -25,19 +26,20 @@ namespace Brand.App.Filters {
     }
 
     public void Apply(Bitmap bmp) {
-      int smallWidth = (int)((float)bmp.Width / (float)PixWidth);
-      int smallHeight = (int)((float)bmp.Height / (float)PixHeight);
-      var smallBmp = new Bitmap(smallWidth, smallHeight);
+      using(var dsp = new Disposer()) {
+        int smallWidth = (int)((float)bmp.Width / (float)PixWidth);
+        int smallHeight = (int)((float)bmp.Height / (float)PixHeight);
 
-      using(var g = Graphics.FromImage(smallBmp)) {
-        g.InterpolationMode = ShrinkMode;
-        g.DrawImage(bmp, new Rectangle(0, 0, smallWidth, smallHeight));
-      }
+        var smallBmp = dsp.Add(new Bitmap(smallWidth, smallHeight));
 
-      using(var g = Graphics.FromImage(bmp)) {
-        g.Clear(Color.FromArgb(0, 0, 0, 0));
-        g.InterpolationMode = GrowMode;
-        g.DrawImage(smallBmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
+        var smallG = dsp.Add(Graphics.FromImage(smallBmp));
+        smallG.InterpolationMode = ShrinkMode;
+        smallG.DrawImage(bmp, new Rectangle(0, 0, smallWidth, smallHeight));
+
+        var largeG = dsp.Add(Graphics.FromImage(bmp));
+        largeG.Clear(Color.FromArgb(0, 0, 0, 0));
+        largeG.InterpolationMode = GrowMode;
+        largeG.DrawImage(smallBmp, new Rectangle(0, 0, bmp.Width, bmp.Height));
       }
     }
 

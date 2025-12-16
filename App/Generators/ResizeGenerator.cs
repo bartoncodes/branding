@@ -1,4 +1,5 @@
-﻿using System;
+﻿using App.Util;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
@@ -17,15 +18,16 @@ namespace Branding.App.Generators {
     }
 
     public Bitmap Generate() {
-      var outRect = new Rectangle(0, 0,
-        (int)Math.Floor(Source.Width * XScale),
-        (int)Math.Floor(Source.Height * YScale)
-      );
-      var outBmp = new Bitmap(outRect.Width, outRect.Height);
-      using (var g = Graphics.FromImage(outBmp)) {
+      using(var dsp = new Disposer()) {
+        var outRect = new Rectangle(0, 0,
+          (int)Math.Floor(Source.Width * XScale),
+          (int)Math.Floor(Source.Height * YScale)
+        );
+        var outBmp = new Bitmap(outRect.Width, outRect.Height); // output, don't dispose
+        var g = dsp.Add(Graphics.FromImage(outBmp));
         g.DrawImage(Source, outRect);
+        return outBmp;
       }
-      return outBmp;
     }
 
   }

@@ -1,4 +1,5 @@
-﻿using Branding.App.Util;
+﻿using App.Util;
+using Branding.App.Util;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -15,8 +16,9 @@ namespace Branding.App.Generators {
     public Color EndColor { get; init; }
 
     public Bitmap Generate() {
-      var lineBmp = new Bitmap(Width, MaxHeight);
-      using (var g = Graphics.FromImage(lineBmp)) {
+      using(var dsp = new Disposer()) {
+        var lineBmp = new Bitmap(Width, MaxHeight); // output, do not dispose
+        var g = dsp.Add(Graphics.FromImage(lineBmp));
         var blockX = 0;
         for(var i = 0; i < NumLayers; i++) {
           var blockFactor = (1.0 / NumLayers) * i;
@@ -25,13 +27,13 @@ namespace Branding.App.Generators {
           var blockWidth = (int)(Width * blockFactor) - blockX;
           var blockHeight = (int)(MaxHeight + ((MinHeight - MaxHeight) * blockFactor));
           var blockColor = ColorUtil.Lerp(StartColor, EndColor, blockFactor);
-          var blockBrush = new SolidBrush(blockColor);
+          var blockBrush = dsp.Add(new SolidBrush(blockColor));
           var blockY = (MaxHeight - blockHeight) / 2;
           g.FillRectangle(blockBrush, blockX, blockY, blockWidth, blockHeight);
           blockX += blockWidth;
         }
+        return lineBmp;
       }
-      return lineBmp;
     }
   }
 

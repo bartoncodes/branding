@@ -300,6 +300,11 @@ namespace Branding.App.Gui {
     }
 
     private void RefreshPreview() {
+      // Dispose any currently shown preview image
+      var currentBmp = PreviewPictureBox.Image;
+      if (currentBmp != null)
+        currentBmp.Dispose();
+
       PreviewPictureBox.Image = null;
 
       var profile = GetSelectedProfile();
@@ -318,8 +323,10 @@ namespace Branding.App.Gui {
         var renderer = new BrandRenderer(profile);
         var previewBmp = renderer.Render();
         SyncUi(() => {
-          if (CurrentRenderReqNum != renderReqNum)
+          if (CurrentRenderReqNum != renderReqNum) {
+            previewBmp.Dispose();
             return;
+          }
           PreviewPictureBox.Image = previewBmp;
           PreviewLoadingLabel.Hide();
           lock (RenderLock) {

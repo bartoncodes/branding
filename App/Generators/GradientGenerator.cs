@@ -1,4 +1,5 @@
-﻿using System;
+﻿using App.Util;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -14,16 +15,18 @@ namespace Branding.App.Generators {
     public GradientGenerator(int width, int height, Point p1, Point p2, Color c1, Color c2) {
       Width = width;
       Height = height;
-      Brush = new LinearGradientBrush(p1, p2, c1, c2);
+      Brush = new LinearGradientBrush(p1, p2, c1, c2); // TODO: Dispose it correctly
     }
 
     public Bitmap Generate() {
-      var bmp = new Bitmap(Width, Height);
-      using (var g = Graphics.FromImage(bmp)) {
+      using(var dsp = new Disposer()) {
+        var bmp = new Bitmap(Width, Height); // out bmp, do not dispose
+        var g = dsp.Add(Graphics.FromImage(bmp));
         g.FillRectangle(Brush, 0, 0, Width, Height);
+        return bmp;
       }
-      return bmp;
     }
+
   }
 
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using App.Util;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
@@ -13,23 +14,22 @@ namespace Brand.App.Filters {
     public int MaxLineHeight { get; init; }
 
     public void Apply(Bitmap bmp) {
-      var rand = new Random();
+      using(var dsp = new Disposer()) {
+        var rand = new Random();
 
-      var halfHeight = bmp.Height / 2;
-      var halfHeightRecip = 1.0 / (double)halfHeight;
+        var halfHeight = bmp.Height / 2;
+        var halfHeightRecip = 1.0 / (double)halfHeight;
+        var halfWidth = bmp.Width / 2;
 
-      var halfWidth = bmp.Width / 2;
+        var darkBrush = dsp.Add(new SolidBrush(Color.FromArgb(DarkAlpha, 0, 0, 0)));
 
-      var darkBrush = new SolidBrush(Color.FromArgb(DarkAlpha, 0, 0, 0));
+        var lhMin = (int)(MaxLineHeight * 0.50);
+        var lhRand = MaxLineHeight - lhMin;
 
-      var lhMin = (int)(MaxLineHeight * 0.50);
-      var lhRand = MaxLineHeight - lhMin;
+        var paddingFactor = 1.0 + HaloPadding;
+        var paddingWidth = (int)(bmp.Width * HaloPadding);
 
-      var paddingFactor = 1.0 + HaloPadding;
-      var paddingWidth = (int)(bmp.Width * HaloPadding);
-
-      using (var g = Graphics.FromImage(bmp)) {
-
+        var g = dsp.Add(Graphics.FromImage(bmp));
         var lineY = 0;
         while(lineY < bmp.Height) {
           var lineHeight = rand.Next(lhRand) + lhMin;
@@ -53,7 +53,6 @@ namespace Brand.App.Filters {
 
           lineY += lineHeight;
         }
-
       }
 
     }
