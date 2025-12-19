@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace Brand.App.Json {
+namespace Branding.App.Json {
 
   public class BrandProfileJson {
     public string Name { get; set; }

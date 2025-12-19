@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Brand.App.Json {
+namespace Branding.App.Json {
 
   public class RectangleJson {
     public int X { get; set; }

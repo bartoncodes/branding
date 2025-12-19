@@ -1,5 +1,6 @@
-﻿using Brand.App.Json;
+﻿using Branding.App.Json;
 using Branding.App.Brand;
+using Branding.App.Renderers;
 using Branding.App.Util;
 using System;
 using System.Collections.Generic;
@@ -452,7 +453,13 @@ namespace Branding.App.Gui {
         CurrentRenderReqNum = renderReqNum;
       }
       Task.Run(() => {
-        var renderer = new BrandRenderer(profile);
+        var renderer = Renderer.Create(profile);
+        if(renderer == null) {
+          SyncUi(() => {
+            PreviewLoadingLabel.Hide();
+          });
+          return;
+        }
         var previewBmp = renderer.Render();
         SyncUi(() => {
           if (CurrentRenderReqNum != renderReqNum) {

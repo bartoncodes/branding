@@ -1,5 +1,6 @@
 ﻿using App.Util;
 using Brand.App.Filters;
+using Branding.App.Brand;
 using Branding.App.Generators;
 using Branding.App.Util;
 using System;
@@ -8,12 +9,18 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
 
-namespace Branding.App.Brand {
+namespace Branding.App.Renderers {
 
-  public class BrandRenderer {
-    private BrandProfile Profile { get; set; }
+  public abstract class Renderer {
+    protected BrandProfile Profile { get; set; }
 
-    public BrandRenderer(BrandProfile profile) {
+    protected abstract bool NeedsBgNoiseLayer { get; }
+    protected abstract bool NeedsBinaryLayer { get; }
+    protected abstract bool NeedsDarkHaloLayer { get; }
+    protected abstract bool NeedsBcLogoLayer { get; }
+    protected abstract bool NeedsGlossGradientLayer { get; }
+
+    public Renderer(BrandProfile profile) {
       Profile = profile;
     }
 
@@ -21,25 +28,47 @@ namespace Branding.App.Brand {
 
       using (var dsp = new Disposer()) {
 
-        var fullBmp = new Bitmap(Profile.Width, Profile.Height); // out bmp, do not dispose
-        using (var g = Graphics.FromImage(fullBmp)) {
+        var outBmp = new Bitmap(Profile.Width, Profile.Height); // out bmp, do not dispose
+        using (var g = Graphics.FromImage(outBmp)) {
           g.Clear(Color.Black);
         }
 
-        // Background Noise
+        if(NeedsBgNoiseLayer)
+          RenderBgNoiseLayer(outBmp);
 
+        if(NeedsBinaryLayer)
+          RenderBinaryLayer(outBmp);
+
+        if(NeedsDarkHaloLayer)
+          RenderDarkHaloLayer(outBmp);
+
+        if(NeedsBcLogoLayer)
+          RenderBcLogoLayer(outBmp);
+
+        if(NeedsGlossGradientLayer)
+          RenderGlossGradientLayer(outBmp);
+
+        return outBmp;
+      }
+
+    }
+
+    protected virtual void RenderBgNoiseLayer(Bitmap outBmp) {
+      using(var dsp = new Disposer()) {
         var noiseColor = ColorUtil.Lerp(Profile.Colors.Grit, Color.Black, 0.9);
         for (var i = 3; i <= 8; i++) {
           var blockSize = (int)Math.Pow(2, i);
           var noiseFilter = new NoiseFilter(noiseColor, blockSize); // Block size should depend on total image size
-          noiseFilter.Apply(fullBmp);
+          noiseFilter.Apply(outBmp);
         }
+      }
+    }
 
-        // Binary Stuff
-
+    protected virtual void RenderBinaryLayer(Bitmap outBmp) {
+      using(var dsp = new Disposer()) {
         var binaryGen = new BinaryGenerator() {
-          Width = fullBmp.Width,
-          Height = fullBmp.Height,
+          Width = outBmp.Width,
+          Height = outBmp.Height,
           FontName = "ByteBounce",
           LowFontSize = 30f, // Profile.Height * 0.025f,
           HighFontSize = 60f, // Profile.Height * 0.05f,
@@ -48,18 +77,18 @@ namespace Branding.App.Brand {
           Seed = 0
         };
         var binaryBmp = dsp.Add(binaryGen.Generate());
-        using (var g = Graphics.FromImage(fullBmp)) {
+        using (var g = Graphics.FromImage(outBmp)) {
           g.DrawImage(binaryBmp, 0, 0);
         }
+      }
+    }
 
-
-        // Dark Halo Stuff
-
+    protected virtual void RenderDarkHaloLayer(Bitmap outBmp) {
+      using(var dsp = new Disposer()) {
         var haloPadding = 0.15;
         if (Profile.Type == BrandType.Frame) {
           haloPadding = 0.0;
         }
-
         var darkHaloFilter = new DarkHaloFilter() {
           DarkAlpha = 128,
           JaggedFactor = 0.15,
@@ -67,8 +96,29 @@ namespace Branding.App.Brand {
           HaloPadding = haloPadding,
           MaxLineHeight = Math.Max(10, (int)(Profile.Height / 64))
         };
+        darkHaloFilter.Apply(outBmp);
+      }
+    }
 
+    public virtual void RenderGlossGradientLayer(Bitmap outBmp) {
+      using(var dsp = new Disposer()) {
+        var gradGen = new GradientGenerator(
+          Profile.Width,
+          Profile.Height,
+          new Point(Profile.Width / 2, 0),
+          new Point(Profile.Width / 2, Profile.Height),
+          Color.FromArgb(32, 255, 255, 255),
+          Color.FromArgb(0, 0, 0, 0)
+        );
+        var gradBmp = dsp.Add(gradGen.Generate());
+        using (var g = Graphics.FromImage(outBmp)) {
+          g.DrawImage(gradBmp, 0, 0);
+        }
+      }
+    }
 
+    public virtual void RenderBcLogoLayer(Bitmap outBmp) {
+      using(var dsp = new Disposer()) {
         // Text Stuff
 
         var bartonFontSize = (int)(Profile.AreaOfInterest.Height * 0.50);
@@ -143,7 +193,7 @@ namespace Branding.App.Brand {
 
         // Layout
 
-        using (var g = Graphics.FromImage(fullBmp)) {
+        using (var g = Graphics.FromImage(outBmp)) {
           var bumpHeight = (int)(bartonBmp.Height * 0.12);
           var pinchWidth = (int)(bartonBmp.Width * 0.05);
           var lineSepWidth = (int)(bartonBmp.Width * 0.10);
@@ -184,33 +234,24 @@ namespace Branding.App.Brand {
           g.DrawImage(bartonLineBmp, bartonLineTL);
           g.DrawImage(codesLineBmp, codesLineTL);
 
-          // Apply dark halo
-          darkHaloFilter.Apply(fullBmp);
-
           // Draw text
           g.DrawImage(bartonBmp, bartonTextTL);
           g.DrawImage(codesBmp, codesTextTL);
 
         }
-
-        // Gradient Stuff
-
-        var gradGen = new GradientGenerator(
-          Profile.Width,
-          Profile.Height,
-          new Point(Profile.Width / 2, 0),
-          new Point(Profile.Width / 2, Profile.Height),
-          Color.FromArgb(32, 255, 255, 255),
-          Color.FromArgb(0, 0, 0, 0)
-        );
-        var gradBmp = dsp.Add(gradGen.Generate());
-        using (var g = Graphics.FromImage(fullBmp)) {
-          g.DrawImage(gradBmp, 0, 0);
-        }
-
-        return fullBmp;
       }
+    }
 
+
+    public static Renderer? Create(BrandProfile profile) {
+      switch(profile.Type) {
+        case BrandType.Banner:
+          return new BannerRenderer(profile);
+        case BrandType.Profile:
+          return new ProfileRenderer(profile);
+        default:
+          return null;
+      }
     }
 
   }

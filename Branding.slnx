@@ -3,6 +3,9 @@
     <File Path=".gitignore" />
     <File Path="LICENSE" />
   </Folder>
+  <Folder Name="/Solution Items/Inputs/">
+    <File Path="Inputs/BartonDrawing.png" />
+  </Folder>
   <Folder Name="/Solution Items/Outputs/">
     <File Path="Outputs/Patreon Banner.bmp" />
     <File Path="Outputs/Twitch Banner.bmp" />
@@ -15,6 +18,7 @@
     <File Path="Profiles/TwitchBanner.json" />
     <File Path="Profiles/VideoFrame.json" />
     <File Path="Profiles/XBanner.json" />
+    <File Path="Profiles/XProfile.json" />
     <File Path="Profiles/YoutubeBanner.json" />
   </Folder>
   <Project Path="App/App.csproj" />

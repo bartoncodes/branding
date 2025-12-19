@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
-namespace Brand.App.Json {
+namespace Branding.App.Json {
 
   public class ProfileManager {
 
@@ -27,8 +27,8 @@ namespace Brand.App.Json {
       if (json.AreaOfInterest == null)
         throw new InvalidOperationException($"Invalid area of interest: null");
       if (
-        json.AreaOfInterest.X <= 0 ||
-        json.AreaOfInterest.Y <= 0 ||
+        json.AreaOfInterest.X < 0 ||
+        json.AreaOfInterest.Y < 0 ||
         json.AreaOfInterest.Width <= 0 ||
         json.AreaOfInterest.Height <= 0
       )
