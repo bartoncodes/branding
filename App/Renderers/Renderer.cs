@@ -1,6 +1,7 @@
 ﻿using App.Util;
 using Brand.App.Filters;
 using Branding.App.Brand;
+using Branding.App.Filters;
 using Branding.App.Generators;
 using Branding.App.Util;
 using System;
@@ -233,9 +234,11 @@ namespace Branding.App.Renderers {
 
     public virtual void RenderProPicLayer(Bitmap outBmp) {
       using(var dsp = new Disposer()) {
+        // Raw image
         var rawPath = Path.Combine(InputsDirPath, "BartonDrawing.png");
         var raw = Image.FromFile(rawPath);
 
+        // Line art
         var lineArtGen = new LineArtGenerator() {
           SourceBmp = raw,
           OutWidth = Profile.AreaOfInterest.Width,
@@ -250,8 +253,31 @@ namespace Branding.App.Renderers {
         };
         var lineArt = dsp.Add(lineArtGen.Generate());
 
+        // Draw line art
         var outG = dsp.Add(Graphics.FromImage(outBmp));
         outG.DrawImage(lineArt, Profile.AreaOfInterest.X, Profile.AreaOfInterest.Y);
+
+        // Laser flare 1
+        var laserFlare1Filter = new LaserFlareFilter() {
+          LaserColor = Profile.Colors.Highlight,
+          LargeFlareAngle = (float)(Math.PI / 4),
+          CenterX = 0.27f,
+          CenterY = 0.50f,
+          MinExtent = 0.02f,
+          MaxExtent = 0.15f
+        };
+        laserFlare1Filter.Apply(outBmp);
+
+        // Laser flare 2
+        var laserFlareFilter2 = new LaserFlareFilter() {
+          LaserColor = Profile.Colors.Highlight,
+          LargeFlareAngle = (float)(Math.PI / 4),
+          CenterX = 0.50f,
+          CenterY = 0.49f,
+          MinExtent = 0.02f,
+          MaxExtent = 0.15f
+        };
+        laserFlareFilter2.Apply(outBmp);
       }
     }
 
