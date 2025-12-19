@@ -1,0 +1,13 @@
+{
+  "Name": "Youtube Profile",
+  "Theme": "Youtube",
+  "Type": "Profile",
+  "Width": 800,
+  "Height": 800,
+  "AreaOfInterest": {
+    "X": 0,
+    "Y": 0,
+    "Width": 800,
+    "Height": 800
+  }
+}

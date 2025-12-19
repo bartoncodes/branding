@@ -12,12 +12,15 @@ using System.Text;
 namespace Branding.App.Renderers {
 
   public abstract class Renderer {
+    protected const string InputsDirPath = @"C:\BartonCodes\Branding\Inputs";
+
     protected BrandProfile Profile { get; set; }
 
     protected abstract bool NeedsBgNoiseLayer { get; }
     protected abstract bool NeedsBinaryLayer { get; }
     protected abstract bool NeedsDarkHaloLayer { get; }
     protected abstract bool NeedsBcLogoLayer { get; }
+    protected abstract bool NeedsProPicLayer { get;}
     protected abstract bool NeedsGlossGradientLayer { get; }
 
     public Renderer(BrandProfile profile) {
@@ -44,6 +47,9 @@ namespace Branding.App.Renderers {
 
         if(NeedsBcLogoLayer)
           RenderBcLogoLayer(outBmp);
+
+        if (NeedsProPicLayer)
+          RenderProPicLayer(outBmp);
 
         if(NeedsGlossGradientLayer)
           RenderGlossGradientLayer(outBmp);
@@ -97,23 +103,6 @@ namespace Branding.App.Renderers {
           MaxLineHeight = Math.Max(10, (int)(Profile.Height / 64))
         };
         darkHaloFilter.Apply(outBmp);
-      }
-    }
-
-    public virtual void RenderGlossGradientLayer(Bitmap outBmp) {
-      using(var dsp = new Disposer()) {
-        var gradGen = new GradientGenerator(
-          Profile.Width,
-          Profile.Height,
-          new Point(Profile.Width / 2, 0),
-          new Point(Profile.Width / 2, Profile.Height),
-          Color.FromArgb(32, 255, 255, 255),
-          Color.FromArgb(0, 0, 0, 0)
-        );
-        var gradBmp = dsp.Add(gradGen.Generate());
-        using (var g = Graphics.FromImage(outBmp)) {
-          g.DrawImage(gradBmp, 0, 0);
-        }
       }
     }
 
@@ -242,6 +231,46 @@ namespace Branding.App.Renderers {
       }
     }
 
+    public virtual void RenderProPicLayer(Bitmap outBmp) {
+      using(var dsp = new Disposer()) {
+        var rawPath = Path.Combine(InputsDirPath, "BartonDrawing.png");
+        var raw = Image.FromFile(rawPath);
+
+        var lineArtGen = new LineArtGenerator() {
+          SourceBmp = raw,
+          OutWidth = Profile.AreaOfInterest.Width,
+          OutHeight = Profile.AreaOfInterest.Height,
+          WhiteBg = true,
+          SourceMinIntensity = 0,
+          SourceMaxIntensity = 96,
+          MidIntensity = 128,
+          LowColor = Profile.Colors.Grit,
+          MidColor = Profile.Colors.Base,
+          HighColor = Profile.Colors.Strong
+        };
+        var lineArt = dsp.Add(lineArtGen.Generate());
+
+        var outG = dsp.Add(Graphics.FromImage(outBmp));
+        outG.DrawImage(lineArt, Profile.AreaOfInterest.X, Profile.AreaOfInterest.Y);
+      }
+    }
+
+    public virtual void RenderGlossGradientLayer(Bitmap outBmp) {
+      using (var dsp = new Disposer()) {
+        var gradGen = new GradientGenerator(
+          Profile.Width,
+          Profile.Height,
+          new Point(Profile.Width / 2, 0),
+          new Point(Profile.Width / 2, Profile.Height),
+          Color.FromArgb(32, 255, 255, 255),
+          Color.FromArgb(0, 0, 0, 0)
+        );
+        var gradBmp = dsp.Add(gradGen.Generate());
+        using (var g = Graphics.FromImage(outBmp)) {
+          g.DrawImage(gradBmp, 0, 0);
+        }
+      }
+    }
 
     public static Renderer? Create(BrandProfile profile) {
       switch(profile.Type) {
@@ -249,6 +278,8 @@ namespace Branding.App.Renderers {
           return new BannerRenderer(profile);
         case BrandType.Profile:
           return new ProfileRenderer(profile);
+        case BrandType.Frame:
+          return new FrameRenderer(profile);
         default:
           return null;
       }

@@ -1,0 +1,13 @@
+{
+  "Name": "Patreon Profile",
+  "Theme": "Patreon",
+  "Type": "Profile",
+  "Width": 1024,
+  "Height": 1024,
+  "AreaOfInterest": {
+    "X": 0,
+    "Y": 0,
+    "Width": 1024,
+    "Height": 1024
+  }
+}

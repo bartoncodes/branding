@@ -11,6 +11,7 @@ namespace Branding.App.Renderers {
     protected override bool NeedsBinaryLayer => true;
     protected override bool NeedsDarkHaloLayer => true;
     protected override bool NeedsBcLogoLayer => false;
+    protected override bool NeedsProPicLayer => false;
     protected override bool NeedsGlossGradientLayer => false;
 
     public FrameRenderer(BrandProfile profile) : base(profile) {

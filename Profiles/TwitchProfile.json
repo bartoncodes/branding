@@ -1,0 +1,13 @@
+{
+  "Name": "Twitch Profile",
+  "Theme": "Twitch",
+  "Type": "Profile",
+  "Width": 256,
+  "Height": 256,
+  "AreaOfInterest": {
+    "X": 0,
+    "Y": 0,
+    "Width": 256,
+    "Height": 256
+  }
+}

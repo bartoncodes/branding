@@ -15,11 +15,14 @@
   </Folder>
   <Folder Name="/Solution Items/Profiles/">
     <File Path="Profiles/PatreonBanner.json" />
+    <File Path="Profiles/PatreonProfile.json" />
     <File Path="Profiles/TwitchBanner.json" />
+    <File Path="Profiles/TwitchProfile.json" />
     <File Path="Profiles/VideoFrame.json" />
     <File Path="Profiles/XBanner.json" />
     <File Path="Profiles/XProfile.json" />
     <File Path="Profiles/YoutubeBanner.json" />
+    <File Path="Profiles/YoutubeProfile.json" />
   </Folder>
   <Project Path="App/App.csproj" />
 </Solution>

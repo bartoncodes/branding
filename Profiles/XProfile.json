@@ -2,12 +2,12 @@
   "Name": "X Profile",
   "Theme": "X",
   "Type": "Profile",
-  "Width": 800,
-  "Height": 800,
+  "Width": 400,
+  "Height": 400,
   "AreaOfInterest": {
     "X": 0,
     "Y": 0,
-    "Width": 800,
-    "Height": 800
+    "Width": 400,
+    "Height": 400
   }
 }
